@@ -1,0 +1,238 @@
+.header {
+  .container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .logo {
+    padding-top: 0.625rem;
+    width: 9.13%;
+    transition: 0.3s;
+    img {
+      position: initial !important;
+    }
+    &:is(:hover, :focus) {
+      transform: scale(1.05);
+      transition: 0.3s;
+    }
+  }
+
+  .content {
+    display: flex;
+    align-items: center;
+  }
+
+  .nav {
+    .list {
+      display: flex;
+      align-items: center;
+    }
+
+    .link {
+      font-size: 1.125rem;
+      text-decoration: none;
+      padding: 2.5rem 1.8125rem;
+      display: block;
+      transition: 0.3s;
+      background: transparent;
+      outline: none;
+      border: none;
+      color: #fff;
+      cursor: pointer;
+      &:is(:hover, :focus) {
+        background: linear-gradient(
+          to top,
+          rgba(0, 0, 0, 0.4) 0%,
+          rgba(0, 0, 0, 0) 100%
+        );
+        font-weight: 600;
+        transition: 0.3s;
+      }
+    }
+  }
+}
+
+.currencies {
+  margin-left: 1.5625rem;
+  position: relative;
+
+  .active {
+    display: flex;
+    align-items: center;
+    font-weight: 800;
+    border: 0.0625rem solid #fff;
+    padding: 1.1rem 1rem;
+    cursor: pointer;
+    background: transparent;
+    outline: none;
+    color: #fff;
+    width: 100%;
+
+    span {
+      pointer-events: none;
+    }
+  }
+
+  .list {
+    position: absolute;
+    background: linear-gradient(
+      to top,
+      rgba(0, 0, 0, 0.4) 0%,
+      rgba(0, 0, 0, 0) 100%
+    );
+    display: flex;
+    flex-direction: column;
+    left: 0;
+    right: 0;
+    top: 100%;
+    text-align: center;
+    padding: 0.5rem 0;
+
+    &.hidden {
+      display: none;
+    }
+
+    .currency__btn {
+      background: none;
+      outline: none;
+      border: none;
+      color: inherit;
+      font-size: 0.875rem;
+      padding: 0.5rem 0;
+      transition: 0.3s;
+      cursor: pointer;
+
+      &:is(:hover, :focus) {
+        font-weight: 600;
+        transition: 0.3s;
+        font-size: 1.125rem;
+      }
+    }
+  }
+}
+
+.mobileToggler {
+  display: none;
+  width: clamp(1.5rem, 10%, 2.5rem);
+  aspect-ratio: 1/1;
+  border: none;
+  outline: none;
+  background: transparent;
+  padding: 0;
+
+  svg {
+    fill: #fff;
+  }
+
+  &:hover,
+  &:focus {
+    transform: scale(0.85);
+  }
+}
+
+.mobile-toggler__x {
+  display: none;
+}
+
+@media screen and (max-width: 75rem) {
+  .header {
+    .nav {
+      .link {
+        padding: 2.5rem 1rem;
+      }
+    }
+  }
+
+  .currencies {
+    margin-left: 1.5rem;
+
+    .active {
+      padding: 1.1rem 0.8rem;
+    }
+  }
+}
+
+@media screen and (max-width: 62rem) {
+  .header {
+    .container {
+      padding-top: 1rem;
+    }
+
+    .logo {
+      padding: 0;
+      width: clamp(4rem, 30%, 7rem);
+    }
+
+    .content {
+      display: none;
+      flex-direction: column;
+      position: fixed;
+      align-items: center;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      padding: 1rem;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 32;
+      backdrop-filter: blur(1rem);
+      &.visible {
+        display: flex;
+      }
+    }
+
+    .nav {
+      width: min(30rem, 100%);
+
+      .list {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .link {
+        font-size: 1rem;
+        padding: 2rem 0;
+        text-align: center;
+        width: 100%;
+      }
+    }
+  }
+
+  .mobileToggler {
+    display: block;
+
+    &.visible {
+      position: absolute;
+      z-index: 100;
+      top: 1rem;
+      right: 1rem;
+      width: 2rem;
+
+      .mobile-toggler__bars {
+        display: none;
+      }
+
+      .mobile-toggler__x {
+        display: block;
+      }
+    }
+  }
+
+  .currencies {
+    margin: 2rem 0 0 0;
+    width: min(30rem, 100%);
+
+    .active {
+      justify-content: center;
+    }
+
+    .list {
+      position: initial;
+
+      .currency__btn {
+        padding: 1rem 0;
+      }
+    }
+  }
+}
