@@ -27,15 +27,6 @@ const Description = () => {
         category.products.forEach((item) => {
           if (item.description) {
             serverProducts.push(item);
-            serverProducts.push(item);
-            serverProducts.push(item);
-            serverProducts.push(item);
-            serverProducts.push(item);
-            serverProducts.push(item);
-            serverProducts.push(item);
-            serverProducts.push(item);
-            serverProducts.push(item);
-            serverProducts.push(item);
           }
         });
       }

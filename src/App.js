@@ -7,15 +7,21 @@ import { Provider } from "react-redux";
 import store from "./storage/redux";
 import TutorialPage from "./pages/TutorialPage";
 import DescriptionPage from "./pages/DescriptionPage";
+import ErrorPage from "./pages/ErrorPage";
+import SuccessPage from "./pages/SuccessPage";
+import FailPage from "./pages/FailPage";
 
 const router = createBrowserRouter([
   {
     path: "/",
     element: <RootLayout />,
+    errorElement: <ErrorPage />,
     children: [
       { path: "/", index: true, element: <HomePage /> },
       { path: "/tutorial", element: <TutorialPage /> },
-      { path: "/description", element: <DescriptionPage /> }
+      { path: "/description", element: <DescriptionPage /> },
+      { path: "/success", element: <SuccessPage /> },
+      { path: "/fail", element: <FailPage /> },
     ],
   },
 ]);

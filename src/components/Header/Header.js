@@ -30,11 +30,11 @@ const Header = () => {
           >
             <nav className={styles.nav}>
               <ul className={styles.list}>
-                <li className={styles.item}>
+                {/* <li className={styles.item}>
                   <NavLink to="/rules" className={styles.link}>
                     Правила
                   </NavLink>
-                </li>
+                </li> */}
                 <li className={styles.item}>
                   <NavLink to="/tutorial" className={styles.link}>
                     Как купить донат?

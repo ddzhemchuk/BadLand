@@ -1,135 +1,223 @@
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import styles from "./TopUp.module.scss";
 import { useEffect, useState } from "react";
+import { request } from "../../utils";
+import config from "../../storage/config";
+import { storageActions } from "../../storage/redux";
 
 const TopUp = () => {
-  const servers = useSelector((state) => state.servers);
+  const data = useSelector((state) => state.servers);
   const currency = useSelector((state) => state.currentCurrency);
+  const dispatch = useDispatch();
 
-  const [productId, setProductId] = useState(-1);
-  const [product, setProduct] = useState(null);
+  const [categories, setCategories] = useState([]);
+  const [productData, setProductData] = useState(null);
+
+  const [selectedServer, setSelectedServer] = useState(-1);
+  const [selectedProduct, setSelectedProduct] = useState(-1);
+
   const [price, setPrice] = useState(0);
 
   const [nickname, setNickname] = useState("");
   const [quantity, setQuantity] = useState(0);
 
-  // useEffect(() => {
-  //   if (
-  //     products.length > 0 &&
-  //     products[0].products.length > 0 &&
-  //     products[0].products[0].id
-  //   ) {
-  //     setProductId(products[0].products[0].id);
-  //   }
-  // }, [products]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // useEffect(() => {
-  //   if (productId !== -1) {
-  //     const product = products
-  //       .map((group) => group.products)
-  //       .flat()
-  //       .find((item) => item.id === productId);
+  useEffect(() => {
+    setSelectedServer(data.length > 0 ? data[0].id : -1);
+  }, [data]);
 
-  //     if (product) {
-  //       setProduct(product);
-  //       setPrice(product.price);
-  //       if (product.custom) {
-  //         setQuantity(product.custom.min);
-  //         setPrice((product.custom.price * product.custom.min).toFixed(2));
-  //       }
-  //     }
-  //   }
-  // }, [products, productId]);
+  useEffect(() => {
+    const findServerData = data.find((item) => item.id === selectedServer);
 
-  // const validateQuantity = (quantity, product) => {
-  //   let newQuantity = parseInt(quantity);
+    if (
+      !findServerData ||
+      !findServerData.categories ||
+      findServerData.categories.length === 0
+    ) {
+      setSelectedProduct(-1);
+      return setCategories([]);
+    }
 
-  //   if (isNaN(newQuantity)) {
-  //     return product.custom.min;
-  //   }
+    let firstProduct = -1;
 
-  //   if (newQuantity < product.custom.min) {
-  //     return product.custom.min;
-  //   }
+    if (
+      findServerData.categories[0].products &&
+      findServerData.categories[0].products.length > 0
+    ) {
+      firstProduct = findServerData.categories[0].products[0].id ?? -1;
+    }
 
-  //   if (newQuantity > product.custom.max) {
-  //     return product.custom.max;
-  //   }
+    setSelectedProduct(firstProduct);
+    setCategories(findServerData.categories);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedServer]);
 
-  //   return newQuantity;
-  // };
+  useEffect(() => {
+    let findProductData = -1;
 
-  // useEffect(() => {
-  //   const id = setTimeout(() => {
-  //     if (!product || !product.custom) {
-  //       return;
-  //     }
+    categories.forEach((item) => {
+      item.products.forEach((product) => {
+        if (product.id === selectedProduct) {
+          findProductData = product;
+        }
+      });
+    });
 
-  //     const newQuantity = validateQuantity(quantity, product);
+    if (!findProductData) {
+      return setProductData(null);
+    }
 
-  //     setQuantity(newQuantity);
-  //     setPrice((product.custom.price * newQuantity).toFixed(2));
-  //   }, 1000);
+    setPrice(findProductData.price);
 
-  //   return () => clearTimeout(id);
-  // }, [quantity, product]);
+    if (findProductData.custom) {
+      setQuantity(findProductData.custom.min);
+      setPrice(
+        (findProductData.custom.price * findProductData.custom.min).toFixed(2)
+      );
+    }
 
-  // const getPrice = (price) => {
-  //   let finalPrice = (price * currency.rate).toFixed(2);
+    setProductData(findProductData);
+  }, [selectedProduct, categories]);
 
-  //   if (finalPrice.split(".")[1] === "00") {
-  //     finalPrice = finalPrice.split(".")[0];
-  //   }
+  useEffect(() => {
+    const id = setTimeout(() => {
+      if (!productData || !productData.custom) {
+        return;
+      }
 
-  //   return `${finalPrice} ${currency.icon}`;
-  // };
+      let newQuantity = parseInt(quantity);
+
+      if (isNaN(newQuantity)) {
+        newQuantity = productData.custom.min;
+      }
+
+      if (newQuantity < productData.custom.min) {
+        newQuantity = productData.custom.min;
+      }
+
+      if (newQuantity > productData.custom.max) {
+        newQuantity = productData.custom.max;
+      }
+
+      setQuantity(newQuantity);
+      setPrice((productData.custom.price * newQuantity).toFixed(2));
+    }, 500);
+
+    return () => clearTimeout(id);
+  }, [quantity, productData]);
+
+  const getPrice = (price) => {
+    let finalPrice = (price * currency.rate).toFixed(2);
+
+    if (finalPrice.split(".")[1] === "00") {
+      finalPrice = finalPrice.split(".")[0];
+    }
+
+    return `${finalPrice} ${currency.icon}`;
+  };
+
+  const pay = async (e) => {
+    e.preventDefault();
+
+    const body = {
+      action: "pay",
+      currency: currency.code,
+      nickname,
+      server: selectedServer,
+      product: selectedProduct,
+      quantity,
+    };
+
+    setIsSubmitting(true);
+    const resp = await request(`${config.api.url}`, "POST", body);
+
+    if (resp.success) {
+      window.location.href = resp.data.link;
+    } else {
+      dispatch(
+        storageActions.showModal({
+          show: true,
+          type: "error",
+          message: resp.message,
+        })
+      );
+    }
+    setIsSubmitting(false);
+  };
 
   return (
     <section className="main-content">
       <div className="container">
         <div className={styles["topup-block"]}>
           <h1 className={styles["topup-block__title"]}>Пополнить аккаунт</h1>
-          <form className={styles["topup-form"]}>
+          <form className={styles["topup-form"]} onSubmit={pay}>
             <input
               type="text"
               className={styles["topup-form__input"]}
               placeholder="Введите никнейм"
               value={nickname}
               onChange={(e) => setNickname(e.target.value)}
+              required
             />
-            {product && product.custom && (
+            <div className={styles["topup-form__select-box"]}>
+              <select
+                className={styles["topup-form__select"]}
+                onChange={(e) => {
+                  setSelectedServer(e.target.value);
+                }}
+                value={selectedServer}
+                required
+              >
+                <optgroup label="Выбор сервер">
+                  {data.map((serverItem) => (
+                    <option key={serverItem.id} value={serverItem.id}>
+                      {serverItem.title}
+                    </option>
+                  ))}
+                </optgroup>
+              </select>
+              <span className="material-symbols-outlined"> expand_more </span>
+            </div>
+            <div className={styles["topup-form__select-box"]}>
+              <select
+                className={styles["topup-form__select"]}
+                onChange={(e) => {
+                  setSelectedProduct(e.target.value);
+                }}
+                value={selectedProduct}
+                required
+              >
+                {categories.map((category, index) => (
+                  <optgroup key={index} label={category.group_title}>
+                    {category.products.map((item) => (
+                      <option key={item.id} value={item.id}>
+                        {item.title}
+                      </option>
+                    ))}
+                  </optgroup>
+                ))}
+              </select>
+              <span className="material-symbols-outlined"> expand_more </span>
+            </div>
+            {productData && productData.custom && (
               <input
                 type="text"
                 className={styles["topup-form__input"]}
                 placeholder="Введите количество"
                 value={quantity}
                 onChange={(e) => setQuantity(e.target.value)}
+                required
               />
             )}
-            <div className={styles["topup-form__select-box"]}>
-              <select
-                className={styles["topup-form__select"]}
-                onChange={(e) => {
-                  setProductId(e.target.value);
-                }}
-                value={productId}
-              >
-                {/* {products.map((group, index) => (
-                  <optgroup key={index} label={group.group_title}>
-                    {group.products.map((item) => (
-                      <option key={item.id} value={item.id}>
-                        {item.title}
-                      </option>
-                    ))}
-                  </optgroup>
-                ))} */}
-              </select>
-              <span className="material-symbols-outlined"> expand_more </span>
-            </div>
             <div className={styles["summary"]}>
               <p className={styles["summary__text"]}>К оплате:</p>
-              {/* <p className={styles["summary__price"]}>{getPrice(price || 0)}</p> */}
-              <button type="submit" className={styles["summary__submit"]}>
+              <p className={styles["summary__price"]}>{getPrice(price || 0)}</p>
+              <button
+                type="submit"
+                className={styles["summary__submit"]}
+                disabled={isSubmitting ? true : false}
+              >
                 Оплатить
               </button>
             </div>
