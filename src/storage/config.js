@@ -3,10 +3,10 @@ const config = {
         url: '/engine/api.php',
         baseUrl: '',
     },
-    // api: {
-    //     url: 'http://localhost:8888/engine/api.php',
-    //     baseUrl: 'http://localhost:8888',
-    // }
+    api: {
+        url: 'http://localhost:8888/engine/api.php',
+        baseUrl: 'http://localhost:8888',
+    }
 }
 
 export default config;
