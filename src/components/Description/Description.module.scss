@@ -74,6 +74,8 @@
 
   .description {
     flex-grow: 1;
+    height: 100%;
+    overflow: auto;
 
     .descriptionText {
       margin-top: 1.25rem;
@@ -93,22 +95,6 @@
     flex-basis: 0;
     min-height: 0;
     overflow: auto;
-
-    /* width */
-    &::-webkit-scrollbar {
-      width: 0.375rem;
-    }
-
-    /* Track */
-    &::-webkit-scrollbar-track {
-      background: #000;
-    }
-
-    /* Handle */
-    &::-webkit-scrollbar-thumb,
-    &::-webkit-scrollbar-thumb:hover {
-      background: linear-gradient(to bottom, #810009, #ff0000);
-    }
 
     li {
       &:not(:last-of-type) {
@@ -133,6 +119,24 @@
       }
     }
   }
+}
+
+.list, .description{
+    /* width */
+    &::-webkit-scrollbar {
+      width: 0.375rem;
+    }
+
+    /* Track */
+    &::-webkit-scrollbar-track {
+      background: #000;
+    }
+
+    /* Handle */
+    &::-webkit-scrollbar-thumb,
+    &::-webkit-scrollbar-thumb:hover {
+      background: linear-gradient(to bottom, #810009, #ff0000);
+    }
 }
 
 @media screen and (max-width: 62rem) {
