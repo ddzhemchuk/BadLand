@@ -179,3 +179,29 @@ optgroup{
     height: 4rem;
   }
 }
+
+.emailRequest{
+  background: transparent;
+  border: none;
+  outline: none;
+  display: flex;
+  color: #fff;
+  align-items: center;
+  justify-content: flex-start;
+  // flex-wrap: wrap;
+  gap: 0.5rem;
+  cursor: pointer;
+  text-align: left;
+
+  .checkbox{
+    width: 1.5rem;
+    aspect-ratio: 1/1;
+    border: 0.125rem solid #db0005;
+    flex-shrink: 0;
+    padding: 0.25rem;
+
+    svg{
+      fill: #fff;
+    }
+  }
+}

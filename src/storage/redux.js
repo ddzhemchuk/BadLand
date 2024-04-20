@@ -41,7 +41,7 @@ const slice = createSlice({
       state.modal.type = action.payload.type;
       state.modal.message = action.payload.message
         ? action.payload.message
-        : "";
+        : "Произошла неизвестная ошибка";
     },
     hideModal(state) {
       state.modal.show = false;

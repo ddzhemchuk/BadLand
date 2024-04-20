@@ -51,6 +51,68 @@
       }
     }
   }
+
+  .dropdown {
+    position: relative;
+
+    .current {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      span {
+        transform: rotate(0);
+        transition: 0.3s;
+      }
+
+      &.active {
+        span {
+          transform: rotate(180deg);
+          transition: 0.3s;
+        }
+      }
+    }
+  }
+}
+
+.dropdownArray {
+  background: linear-gradient(
+    to top,
+    rgba(0, 0, 0, 0.4) 0%,
+    rgba(0, 0, 0, 0) 100%
+  );
+
+  padding: 0.5rem 1rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  text-align: center;
+
+  @media screen and (min-width: 62rem) {
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  .target {
+    font-size: 0.875rem;
+    text-wrap: nowrap;
+    text-align: center;
+    text-decoration: none;
+    padding: 0.5rem 0;
+    display: inline-block;
+
+    @media screen and (max-width: 62rem){
+      padding: 1rem 0;
+    }
+    
+
+    &:is(:hover, :focus) {
+      font-weight: 600;
+      font-size: 1.125rem;
+    }
+  }
 }
 
 .currencies {

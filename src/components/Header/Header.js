@@ -5,7 +5,7 @@ import { NavLink } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { storageActions } from "../../storage/redux";
 
-const Header = () => {
+const Header = ({ agreements = [] }) => {
   const currencies = useSelector((state) => state.currencies);
   const currentCurrency = useSelector((state) => state.currentCurrency);
 
@@ -13,6 +13,7 @@ const Header = () => {
 
   const [mobileMenu, setMobileMenu] = useState(false);
   const [showCurrencies, setShowCurrencies] = useState(false);
+  const [showAgreements, setShowAgreements] = useState(false);
 
   return (
     <header className={styles.header}>
@@ -30,11 +31,6 @@ const Header = () => {
           >
             <nav className={styles.nav}>
               <ul className={styles.list}>
-                {/* <li className={styles.item}>
-                  <NavLink to="/rules" className={styles.link}>
-                    Правила
-                  </NavLink>
-                </li> */}
                 <li className={styles.item}>
                   <NavLink to="/tutorial" className={styles.link}>
                     Как купить донат?
@@ -45,6 +41,51 @@ const Header = () => {
                     Описание доната
                   </NavLink>
                 </li>
+                {agreements.length > 0 && (
+                  <li className={`${styles.item} ${styles.dropdown}`}>
+                    <p
+                      className={
+                        showAgreements
+                          ? `${styles.link} ${styles.current} ${styles.active}`
+                          : `${styles.link} ${styles.current}`
+                      }
+                      onClick={() => setShowAgreements((state) => !state)}
+                    >
+                      Справка
+                      <span className="material-symbols-outlined">
+                        expand_more
+                      </span>
+                    </p>
+                    {showAgreements && (
+                      <ul className={styles.dropdownArray}>
+                        {agreements.map((item, index) => {
+                          if (item.type && item.type === "file") {
+                            return (
+                              <li key={index}>
+                                <a href={item.href} className={styles.target}>
+                                  {item.title}
+                                </a>
+                              </li>
+                            );
+                          }
+
+                          return (
+                            <li key={index}>
+                              <NavLink
+                                to={`/info/${item.slug}`}
+                                className={styles.target}
+                                onClick={() => setShowAgreements(false)}
+                              >
+                                {item.title}
+                              </NavLink>
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    )}
+                  </li>
+                )}
+
                 <li className={styles.item}>
                   <button
                     type="button"

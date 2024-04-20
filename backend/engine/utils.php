@@ -50,9 +50,15 @@ function executeRconCommand($server, $command, $prefix)
     }
 }
 
-function toPay($req_nickname, $req_product, $req_server, $req_quantity, $req_currency)
+function toPay($req_nickname, $req_product, $req_server, $req_quantity, $req_currency, $req_email)
 {
     global $config;
+
+    if ($req_email) {
+        if (!filter_var($req_email, FILTER_VALIDATE_EMAIL)) {
+            sendResponse(false, false, "Некорректный email");
+        }
+    }
 
     $servers = $config['servers'];
     if (!validateCurrency($req_currency)) {
@@ -91,7 +97,7 @@ function toPay($req_nickname, $req_product, $req_server, $req_quantity, $req_cur
         $finalAmount = round($valid_data["product"]["custom"]["price"] * $req_quantity, 2);
     }
 
-    $payLink = getPaymentLink($finalAmount, $finalCommand, $valid_data["server"]["id"], $req_currency);
+    $payLink = getPaymentLink($finalAmount, $finalCommand, $valid_data["server"]["id"], $req_currency, $req_email);
 
     if ($payLink) {
         return $payLink;
@@ -124,7 +130,7 @@ function validateCurrency($currency)
     return $exists;
 }
 
-function getPaymentLink($amount, $command, $server, $currency)
+function getPaymentLink($amount, $command, $server, $currency, $email = false)
 {
     global $config;
 
@@ -147,6 +153,10 @@ function getPaymentLink($amount, $command, $server, $currency)
         "custom_fields" => ["command" => $command, "server" => $server],
         "shop_id" => $shop_id
     ];
+
+    if ($email) {
+        $invoiceData["email"] = $email;
+    }
 
     $url = "https://api.enot.io/invoice/create";
     $headers = [
@@ -209,4 +219,29 @@ function removeSensetiveData($data)
 
 
     return $data;
+}
+
+function getPages($data)
+{
+    foreach ($data as $key => $page) {
+        if ($page['content']) {
+            unset($data[$key]['content']);
+        }
+    }
+
+
+    return $data;
+}
+
+function findPage($slug)
+{
+    global $config;
+
+    foreach ($config['agreements'] as $page) {
+        if ($page['slug'] == $slug) {
+            return $page;
+        }
+    }
+
+    return false;
 }

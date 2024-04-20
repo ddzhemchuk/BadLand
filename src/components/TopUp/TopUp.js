@@ -23,6 +23,9 @@ const TopUp = () => {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const [isEmailRequest, setIsEmailRequest] = useState(false);
+  const [email, setEmail] = useState("");
+
   useEffect(() => {
     setSelectedServer(data.length > 0 ? data[0].id : -1);
   }, [data]);
@@ -129,6 +132,10 @@ const TopUp = () => {
       quantity,
     };
 
+    if (isEmailRequest) {
+      body.email = email;
+    }
+
     setIsSubmitting(true);
     const resp = await request(`${config.api.url}`, "POST", body);
 
@@ -160,6 +167,16 @@ const TopUp = () => {
               onChange={(e) => setNickname(e.target.value)}
               required
             />
+            {isEmailRequest && (
+              <input
+                type="email"
+                className={styles["topup-form__input"]}
+                placeholder="Введите ваш email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+            )}
             <div className={styles["topup-form__select-box"]}>
               <select
                 className={styles["topup-form__select"]}
@@ -210,6 +227,22 @@ const TopUp = () => {
                 required
               />
             )}
+            <button
+              type="button"
+              className={styles.emailRequest}
+              onClick={() => setIsEmailRequest((state) => !state)}
+            >
+              <span className={styles.checkbox}>
+                {isEmailRequest && (
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+                    <path d="M480.1 128.1l-272 272C204.3 405.7 198.2 408 192 408s-12.28-2.344-16.97-7.031l-144-144c-9.375-9.375-9.375-24.56 0-33.94s24.56-9.375 33.94 0L192 350.1l255-255c9.375-9.375 24.56-9.375 33.94 0S490.3 119.6 480.1 128.1z" />
+                  </svg>
+                )}
+              </span>
+              <span className={styles.emailText}>
+                Отправить чек по электронной почте
+              </span>
+            </button>
             <div className={styles["summary"]}>
               <p className={styles["summary__text"]}>К оплате:</p>
               <p className={styles["summary__price"]}>{getPrice(price || 0)}</p>

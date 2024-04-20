@@ -18,7 +18,19 @@ const ErrorPage = () => {
       <main className="main"></main>
       <Footer />
       <Modal error={true}>
-        <span style={{display: "block", fontWeight: "bold", fontSize: "1.25rem", marginBottom: "1rem"}}>{error.status} {error.statusText}</span> {error.error.message}
+        <span
+          style={{
+            display: "block",
+            fontWeight: "bold",
+            fontSize: "1.25rem",
+            marginBottom: "1rem",
+          }}
+        >
+          {error.status} {error.statusText}
+        </span>{" "}
+        {error.error && error.error.message
+          ? error.error.message
+          : error.message}
       </Modal>
     </>
   );
