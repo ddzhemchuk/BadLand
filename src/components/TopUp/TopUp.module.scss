@@ -133,8 +133,21 @@
   transition: 0.3s;
 }
 
-optgroup{
+optgroup {
   color: #000;
+}
+
+.agreement {
+  font-size: 0.8rem;
+  opacity: 0.75;
+  transition: .3s;
+  text-align: center;
+
+  &:hover,
+  &:focus {
+    opacity: 1;
+    transition: .3s;
+  }
 }
 
 @media screen and (max-width: 62rem) {
@@ -180,7 +193,7 @@ optgroup{
   }
 }
 
-.emailRequest{
+.emailRequest {
   background: transparent;
   border: none;
   outline: none;
@@ -193,14 +206,14 @@ optgroup{
   cursor: pointer;
   text-align: left;
 
-  .checkbox{
+  .checkbox {
     width: 1.5rem;
     aspect-ratio: 1/1;
     border: 0.125rem solid #db0005;
     flex-shrink: 0;
     padding: 0.25rem;
 
-    svg{
+    svg {
       fill: #fff;
     }
   }

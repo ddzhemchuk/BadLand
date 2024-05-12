@@ -254,6 +254,13 @@ const TopUp = () => {
                 Оплатить
               </button>
             </div>
+            <p className={styles.agreement}>
+              Нажимая на оплатить, вы ознакомились и согласны с{" "}
+              <a href="https://badland.su/agreements/user-agreement.pdf">
+                пользовательским соглашением
+              </a>
+              .
+            </p>
           </form>
         </div>
       </div>

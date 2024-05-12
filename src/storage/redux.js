@@ -5,14 +5,14 @@ const slice = createSlice({
   initialState: {
     currencies: [
       {
-        code: "RUB",
-        icon: "₽",
+        code: "KZT",
+        icon: "₸",
         rate: 1,
       },
     ],
     currentCurrency: {
-      code: "RUB",
-      icon: "₽",
+      code: "KZT",
+      icon: "₸",
       rate: 1,
     },
     servers: [],

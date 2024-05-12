@@ -12,7 +12,7 @@ if ($_SERVER['REQUEST_METHOD'] === "GET" && isset($_GET['action'])) {
                 $data = [];
             }
 
-            array_unshift($data, ["code" => "RUB", "icon" => "₽", "rate" => 1]);
+            array_unshift($data, ["code" => "KZT", "icon" => "₸", "rate" => 1]);
 
             $response = [
                 'currencies' => $data,

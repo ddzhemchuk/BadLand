@@ -119,10 +119,10 @@ $config = [
         ],
     ],
     'currencies' => [
-        ["code" => "USD", "icon" => "$", "rate" => 0.011],
-        ["code" => "EUR", "icon" => "€", "rate" => 0.0099],
-        ["code" => "KZT", "icon" => "₸", "rate" => 4.86],
-        ["code" => "UAH", "icon" => "₴", "rate" => 0.42],
+        ["code" => "RUB", "icon" => "₽", "rate" => 0.21], 
+        ["code" => "USD", "icon" => "$", "rate" => 0.0023], 
+        ["code" => "EUR", "icon" => "€", "rate" => 0.0021],
+        ["code" => "UAH", "icon" => "₴", "rate" => 0.090],
         // ["code" => "BYN", "icon" => "Br", "rate" => 0.035]
     ],
     'paymentSystem' => [
