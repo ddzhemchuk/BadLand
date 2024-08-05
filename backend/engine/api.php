@@ -63,8 +63,14 @@ if ($_SERVER['REQUEST_METHOD'] === "GET" && isset($_GET['action'])) {
             $req_server = $_GET["server"] ?? null;
             $req_quantity = $_GET["quantity"] ?? null;
             $req_currency = $_GET["currency"] ?? "RUB";
+            $ps = null;
 
-            $payLink = toPay($req_nickname, $req_product, $req_server, $req_quantity, $req_currency, null);
+            foreach ($config["paymentSystems"] as $key) {
+                $ps = $key;
+                break;
+            }
+            
+            $payLink = toPay($ps, $req_nickname, $req_product, $req_server, $req_quantity, $req_currency, null);
             header("Location: $payLink");
             die();
 
@@ -76,6 +82,12 @@ if ($_SERVER['REQUEST_METHOD'] === "GET" && isset($_GET['action'])) {
             if (!isset($data) || !is_array($data) || empty($data)) {
                 sendResponse(false, false, "Страница не найдена");
             }
+
+            sendResponse(true, $data);
+            break;
+
+        case 'paymentSystems':
+            $data = getPaymentSystems();
 
             sendResponse(true, $data);
             break;
@@ -106,8 +118,9 @@ if ($_SERVER['REQUEST_METHOD'] === "POST") {
             $req_quantity = $data["quantity"] ?? null;
             $req_currency = $data["currency"] ?? null;
             $req_email = $data["email"] ?? null;
+            $req_paymentSystem = $data["paymentSystem"] ?? null;
 
-            $payLink = toPay($req_nickname, $req_product, $req_server, $req_quantity, $req_currency, $req_email);
+            $payLink = toPay($req_paymentSystem, $req_nickname, $req_product, $req_server, $req_quantity, $req_currency, $req_email);
             sendResponse(true, ["link" => $payLink]);
 
             break;

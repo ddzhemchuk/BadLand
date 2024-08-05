@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { request } from "../../utils";
 import config from "../../storage/config";
 import { storageActions } from "../../storage/redux";
+import PaymentSystemsModal from "../Modal/PaymentSystemsModal";
 
 const TopUp = () => {
   const data = useSelector((state) => state.servers);
@@ -25,6 +26,11 @@ const TopUp = () => {
 
   const [isEmailRequest, setIsEmailRequest] = useState(false);
   const [email, setEmail] = useState("");
+
+  const [showPaymentSystems, setShowPaymentSystems] = useState(false);
+  const [paymentSystems, setPaymentSystems] = useState([]);
+  const [paymentSystem, setPaymentSystem] = useState(null);
+
 
   useEffect(() => {
     setSelectedServer(data.length > 0 ? data[0].id : -1);
@@ -120,9 +126,7 @@ const TopUp = () => {
     return `${finalPrice} ${currency.icon}`;
   };
 
-  const pay = async (e) => {
-    e.preventDefault();
-
+  const pay = async () => {
     const body = {
       action: "pay",
       currency: currency.code,
@@ -130,6 +134,7 @@ const TopUp = () => {
       server: selectedServer,
       product: selectedProduct,
       quantity,
+      paymentSystem
     };
 
     if (isEmailRequest) {
@@ -138,7 +143,7 @@ const TopUp = () => {
 
     setIsSubmitting(true);
     const resp = await request(`${config.api.url}`, "POST", body);
-
+    
     if (resp.success) {
       window.location.href = resp.data.link;
     } else {
@@ -153,118 +158,156 @@ const TopUp = () => {
     setIsSubmitting(false);
   };
 
+  const getPaymentSystems = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+
+    const resp = await request(`${config.api.url}?action=paymentSystems`);
+
+    setIsSubmitting(false);
+
+    if (resp.success) {
+      setPaymentSystems(resp.data);
+      setShowPaymentSystems(true);
+    } else {
+      dispatch(
+        storageActions.showModal({
+          show: true,
+          type: "error",
+          message: resp.message,
+        })
+      );
+    }
+  };
+
   return (
-    <section className="main-content">
-      <div className="container">
-        <div className={styles["topup-block"]}>
-          <h1 className={styles["topup-block__title"]}>Пополнить аккаунт</h1>
-          <form className={styles["topup-form"]} onSubmit={pay}>
-            <input
-              type="text"
-              className={styles["topup-form__input"]}
-              placeholder="Введите никнейм"
-              value={nickname}
-              onChange={(e) => setNickname(e.target.value)}
-              required
-            />
-            {isEmailRequest && (
-              <input
-                type="email"
-                className={styles["topup-form__input"]}
-                placeholder="Введите ваш email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
-            )}
-            <div className={styles["topup-form__select-box"]}>
-              <select
-                className={styles["topup-form__select"]}
-                onChange={(e) => {
-                  setSelectedServer(e.target.value);
-                }}
-                value={selectedServer}
-                required
-              >
-                <optgroup label="Выбор сервер">
-                  {data.map((serverItem) => (
-                    <option key={serverItem.id} value={serverItem.id}>
-                      {serverItem.title}
-                    </option>
-                  ))}
-                </optgroup>
-              </select>
-              <span className="material-symbols-outlined"> expand_more </span>
-            </div>
-            <div className={styles["topup-form__select-box"]}>
-              <select
-                className={styles["topup-form__select"]}
-                onChange={(e) => {
-                  setSelectedProduct(e.target.value);
-                }}
-                value={selectedProduct}
-                required
-              >
-                {categories.map((category, index) => (
-                  <optgroup key={index} label={category.group_title}>
-                    {category.products.map((item) => (
-                      <option key={item.id} value={item.id}>
-                        {item.title}
-                      </option>
-                    ))}
-                  </optgroup>
-                ))}
-              </select>
-              <span className="material-symbols-outlined"> expand_more </span>
-            </div>
-            {productData && productData.custom && (
+    <>
+      <section className="main-content">
+        <div className="container">
+          <div className={styles["topup-block"]}>
+            <h1 className={styles["topup-block__title"]}>Пополнить аккаунт</h1>
+            <form className={styles["topup-form"]} onSubmit={getPaymentSystems}>
               <input
                 type="text"
                 className={styles["topup-form__input"]}
-                placeholder="Введите количество"
-                value={quantity}
-                onChange={(e) => setQuantity(e.target.value)}
+                placeholder="Введите никнейм"
+                value={nickname}
+                onChange={(e) => setNickname(e.target.value)}
                 required
               />
-            )}
-            <button
-              type="button"
-              className={styles.emailRequest}
-              onClick={() => setIsEmailRequest((state) => !state)}
-            >
-              <span className={styles.checkbox}>
-                {isEmailRequest && (
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-                    <path d="M480.1 128.1l-272 272C204.3 405.7 198.2 408 192 408s-12.28-2.344-16.97-7.031l-144-144c-9.375-9.375-9.375-24.56 0-33.94s24.56-9.375 33.94 0L192 350.1l255-255c9.375-9.375 24.56-9.375 33.94 0S490.3 119.6 480.1 128.1z" />
-                  </svg>
-                )}
-              </span>
-              <span className={styles.emailText}>
-                Отправить чек по электронной почте
-              </span>
-            </button>
-            <div className={styles["summary"]}>
-              <p className={styles["summary__text"]}>К оплате:</p>
-              <p className={styles["summary__price"]}>{getPrice(price || 0)}</p>
+              {isEmailRequest && (
+                <input
+                  type="email"
+                  className={styles["topup-form__input"]}
+                  placeholder="Введите ваш email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                />
+              )}
+              <div className={styles["topup-form__select-box"]}>
+                <select
+                  className={styles["topup-form__select"]}
+                  onChange={(e) => {
+                    setSelectedServer(e.target.value);
+                  }}
+                  value={selectedServer}
+                  required
+                >
+                  <optgroup label="Выбор сервер">
+                    {data.map((serverItem) => (
+                      <option key={serverItem.id} value={serverItem.id}>
+                        {serverItem.title}
+                      </option>
+                    ))}
+                  </optgroup>
+                </select>
+                <span className="material-symbols-outlined"> expand_more </span>
+              </div>
+              <div className={styles["topup-form__select-box"]}>
+                <select
+                  className={styles["topup-form__select"]}
+                  onChange={(e) => {
+                    setSelectedProduct(e.target.value);
+                  }}
+                  value={selectedProduct}
+                  required
+                >
+                  {categories.map((category, index) => (
+                    <optgroup key={index} label={category.group_title}>
+                      {category.products.map((item) => (
+                        <option key={item.id} value={item.id}>
+                          {item.title}
+                        </option>
+                      ))}
+                    </optgroup>
+                  ))}
+                </select>
+                <span className="material-symbols-outlined"> expand_more </span>
+              </div>
+              {productData && productData.custom && (
+                <input
+                  type="text"
+                  className={styles["topup-form__input"]}
+                  placeholder="Введите количество"
+                  value={quantity}
+                  onChange={(e) => setQuantity(e.target.value)}
+                  required
+                />
+              )}
               <button
-                type="submit"
-                className={styles["summary__submit"]}
-                disabled={isSubmitting ? true : false}
+                type="button"
+                className={styles.emailRequest}
+                onClick={() => setIsEmailRequest((state) => !state)}
               >
-                Оплатить
+                <span className={styles.checkbox}>
+                  {isEmailRequest && (
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 512 512"
+                    >
+                      <path d="M480.1 128.1l-272 272C204.3 405.7 198.2 408 192 408s-12.28-2.344-16.97-7.031l-144-144c-9.375-9.375-9.375-24.56 0-33.94s24.56-9.375 33.94 0L192 350.1l255-255c9.375-9.375 24.56-9.375 33.94 0S490.3 119.6 480.1 128.1z" />
+                    </svg>
+                  )}
+                </span>
+                <span className={styles.emailText}>
+                  Отправить чек по электронной почте
+                </span>
               </button>
-            </div>
-            <p className={styles.agreement}>
-              Нажимая на оплатить, вы ознакомились и согласны с{" "}
-              <a href="https://badland.su/agreements/user-agreement.pdf">
-                пользовательским соглашением
-              </a>
-              .
-            </p>
-          </form>
+              <div className={styles["summary"]}>
+                <p className={styles["summary__text"]}>К оплате:</p>
+                <p className={styles["summary__price"]}>
+                  {getPrice(price || 0)}
+                </p>
+                <button
+                  type="submit"
+                  className={styles["summary__submit"]}
+                  disabled={isSubmitting ? true : false}
+                >
+                  Оплатить
+                </button>
+              </div>
+              <p className={styles.agreement}>
+                Нажимая на оплатить, вы ознакомились и согласны с{" "}
+                <a href="https://badland.su/agreements/user-agreement.pdf">
+                  пользовательским соглашением
+                </a>
+                .
+              </p>
+            </form>
+          </div>
         </div>
-      </div>
-    </section>
+      </section>
+      {showPaymentSystems && (
+        <PaymentSystemsModal
+          closeHandler={() => setShowPaymentSystems(false)}
+          payHandler={pay}
+          paymentSystems={paymentSystems}
+          setPaymentSystem={setPaymentSystem}
+          paymentSystem={paymentSystem}
+        />
+      )}
+    </>
   );
 };
 

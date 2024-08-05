@@ -1,6 +1,7 @@
 <?php
 require_once $_SERVER['DOCUMENT_ROOT'] . '/engine/config.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/engine/Rcon.class.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/payments/BetaTransferApi.php';
 
 function writeToLog($prefix, $text)
 {
@@ -50,7 +51,7 @@ function executeRconCommand($server, $command, $prefix)
     }
 }
 
-function toPay($req_nickname, $req_product, $req_server, $req_quantity, $req_currency, $req_email)
+function toPay($req_paymentSystem, $req_nickname, $req_product, $req_server, $req_quantity, $req_currency, $req_email)
 {
     global $config;
 
@@ -83,6 +84,10 @@ function toPay($req_nickname, $req_product, $req_server, $req_quantity, $req_cur
         sendResponse(false, false, "Товар не найден");
     }
 
+    if (!findPaymentSystem($req_paymentSystem)) {
+        sendResponse(false, false, "Платежная система не найдена");
+    }
+
     $finalCommand = str_replace("{player}", $req_nickname, $valid_data["product"]["command"]);
     $finalAmount = $valid_data["product"]["price"] ?? 0;
 
@@ -97,7 +102,7 @@ function toPay($req_nickname, $req_product, $req_server, $req_quantity, $req_cur
         $finalAmount = round($valid_data["product"]["custom"]["price"] * $req_quantity, 2);
     }
 
-    $payLink = getPaymentLink($finalAmount, $finalCommand, $valid_data["server"]["id"], $req_currency, $req_email);
+    $payLink = getPaymentLink($req_paymentSystem, $finalAmount, $finalCommand, $valid_data["server"]["id"], $req_currency, $req_email);
 
     if ($payLink) {
         return $payLink;
@@ -117,7 +122,7 @@ function validateCurrency($currency)
 
     $exists = false;
 
-    if ($currency == "RUB") {
+    if ($currency == "KZT") {
         $exists = true;
     } else {
         foreach ($config['currencies'] as $value) {
@@ -130,14 +135,11 @@ function validateCurrency($currency)
     return $exists;
 }
 
-function getPaymentLink($amount, $command, $server, $currency, $email = false)
+function getPaymentLink($paymentSystem, $amount, $command, $server, $currency, $email = false)
 {
     global $config;
 
-    $apiKey = $config['paymentSystem']["apiKey"];
-    $shop_id = $config['paymentSystem']["shop_id"];
-
-    if ($currency != "RUB") {
+    if ($currency != "KZT") {
         foreach ($config['currencies'] as $value) {
             if ($value["code"] == $currency) {
                 $amount = round($amount * $value["rate"], 2);
@@ -146,40 +148,41 @@ function getPaymentLink($amount, $command, $server, $currency, $email = false)
         }
     }
 
+    switch ($paymentSystem) {
+        case 'betaTransfer':
+            return getBetaTransferLink($amount, $currency, $command, $server, $email);
+            break;
+        case 'paypal':
+            return getPaypalLink();
+            break;
+    }
+}
+
+function getBetaTransferLink($amount, $currency, $command, $server, $email)
+{
+    global $config;
+
+    $ps = new BetaTransferApi($config["paymentSystems"]["betaTransfer"]["api_public"], $config["paymentSystems"]["betaTransfer"]["api_secret"]);
+
     $invoiceData = [
-        "amount" => $amount,
-        "order_id" => uniqid(),
-        "currency" => $currency,
-        "custom_fields" => ["command" => $command, "server" => $server],
-        "shop_id" => $shop_id
+        "user_comment" => json_encode(["command" => $command, "server" => $server]),
     ];
 
     if ($email) {
-        $invoiceData["email"] = $email;
+        $invoiceData["payerEmail"] = $email;
     }
 
-    $url = "https://api.enot.io/invoice/create";
-    $headers = [
-        "accept: application/json",
-        "content-type: application/json",
-        "x-api-key: {$apiKey}"
-    ];
-    $ch = curl_init();
-    curl_setopt($ch, CURLOPT_URL, $url);
-    curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-    curl_setopt($ch, CURLOPT_POST, true);
-    curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($invoiceData));
-    $response = curl_exec($ch);
-    curl_close($ch);
-
-    $response = json_decode($response, true);
-
-    if (isset($response["url"])) {
-        return $response["url"];
+    $response = $ps->payment($amount, $currency, uniqid(), $invoiceData);
+    
+    if ($response["urlPayment"]) {
+        return $response["urlPayment"];
     } else {
         return false;
     }
+}
+
+function getPaypalLink()
+{
 }
 
 function sendResponse($success, $data, $msg = false)
@@ -240,6 +243,33 @@ function findPage($slug)
     foreach ($config['agreements'] as $page) {
         if ($page['slug'] == $slug) {
             return $page;
+        }
+    }
+
+    return false;
+}
+
+function getPaymentSystems()
+{
+    global $config;
+
+    $response = [];
+
+    foreach ($config['paymentSystems'] as $name => $ps) {
+        array_push($response, ["id" => $name, "icon" => $ps["icon"], "title" => $ps["title"]]);
+    }
+
+    return $response;
+}
+
+
+function findPaymentSystem($paymentSystem)
+{
+    global $config;
+
+    foreach ($config['paymentSystems'] as $name => $ps) {
+        if ($name === $paymentSystem) {
+            return true;
         }
     }
 

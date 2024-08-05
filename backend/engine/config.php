@@ -125,9 +125,19 @@ $config = [
         ["code" => "UAH", "icon" => "₴", "rate" => 0.090],
         // ["code" => "BYN", "icon" => "Br", "rate" => 0.035]
     ],
-    'paymentSystem' => [
-        "apiKey" => "123",
-        "shop_id" => "423"
+    'paymentSystems' => [
+        "betaTransfer" => [
+            "title" => "BetaTransfer",
+            "icon" => "/images/payments/betatransfer.svg",
+            "api_public" => "f965428026e3d44e21a413b72245e400",
+            "api_secret" => "cbbbf82bad0d5f0c350c4b54a5aaa0d3"
+        ], 
+        // "paypal" => [
+        //     "title" => "PayPal",
+        //     "icon" => "/images/payments/paypal.svg",
+        //     "api_public" => "f965428026e3d44e21a413b72245e400",
+        //     "api_secret" => "cbbbf82bad0d5f0c350c4b54a5aaa0d3"
+        // ], 
     ],
     'contacts' => [
         [
